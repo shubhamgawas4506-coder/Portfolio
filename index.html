@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SHUBHAM #45 — Editorial Cricket & 3D AI Developer Portfolio</title>
+
+    <!-- Studio Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- Matter.js Physics Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <!-- Three.js WebGL Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#05070B',
+                        charcoal: '#10141C',
+                        editorialPaper: '#F3F2EE',
+                        pureWhite: '#FFFFFF',
+                        electricBlue: '#2563EB',
+                        iceCyan: '#38BDF8',
+                        turfAccent: '#10B981',
+                        coolGrey: '#94A3B8',
+                        silverMist: '#E2E8F0',
+                        inkBlack: '#0A0D12'
+                    },
+                    fontFamily: {
+                        anton: ['Anton', 'sans-serif'],
+                        sans: ['Manrope', 'sans-serif'],
+                        tech: ['Space Grotesk', 'monospace'],
+                        hand: ['Caveat', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #05070B;
+            color: #FFFFFF;
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #05070B;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2563EB;
+            border-radius: 3px;
+        }
+
+        .cinematic-noise {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 99;
+            opacity: 0.024;
+            background-image: radial-gradient(#38BDF8 1px, transparent 0);
+            background-size: 26px 26px;
+        }
+
+        .editorial-giant {
+            font-family: 'Anton', sans-serif;
+            text-transform: uppercase;
+            line-height: 0.86;
+            letter-spacing: -0.02em;
+        }
+
+        .cad-selection-box {
+            position: relative;
+            border: 1.5px solid #2563EB;
+            display: inline-block;
+            padding: 0.15em 0.35em;
+        }
+
+        .cad-handle {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            background: #05070B;
+            border: 1.5px solid #38BDF8;
+        }
+
+        .cad-handle.tl {
+            top: -4px;
+            left: -4px;
+        }
+
+        .cad-handle.tr {
+            top: -4px;
+            right: -4px;
+        }
+
+        .cad-handle.bl {
+            bottom: -4px;
+            left: -4px;
+        }
+
+        .cad-handle.br {
+            bottom: -4px;
+            right: -4px;
+        }
+
+        .scrapbook-surface {
+            background-color: #F3F2EE;
+            background-image: radial-gradient(#CBD5E1 1.2px, transparent 0);
+            background-size: 20px 20px;
+            color: #0A0D12;
+        }
+
+        .masking-tape {
+            background: rgba(238, 232, 213, 0.82);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(4px);
+        }
+
+        .receipt-card {
+            background: #FFFFFF;
+            border: 1px solid rgba(10, 13, 18, 0.12);
+            box-shadow: 0 20px 45px rgba(10, 13, 18, 0.08);
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(148, 163, 184, 0.16) 28px);
+        }
+
+        /* Frosted 3D Folders */
+        .folder-3d-card {
+            position: relative;
+            height: 250px;
+            border-radius: 22px;
+            cursor: pointer;
+            perspective: 1200px;
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .folder-3d-card:hover {
+            transform: translateY(-6px);
+        }
+
+        .folder-backplate {
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 25px 55px rgba(0, 0, 0, 0.65);
+        }
+
+        .folder-inner-doc {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 28px;
+            bottom: 24px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #E2E8F0 100%);
+            color: #05070B;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+            transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2;
+        }
+
+        .folder-3d-card:hover .folder-inner-doc,
+        .folder-3d-card.folder-open .folder-inner-doc {
+            transform: translateY(-34px) rotate(-1.5deg) scale(1.02);
+        }
+
+        .folder-front-glass {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 76%;
+            border-radius: 18px 22px 22px 22px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(16, 20, 28, 0.72) 100%);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border-top: 1.5px solid rgba(255, 255, 255, 0.45);
+            border-left: 1px solid rgba(255, 255, 255, 0.22);
+            border-right: 1px solid rgba(255, 255, 255, 0.12);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            z-index: 3;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: bottom center;
+        }
+
+        .folder-3d-card:hover .folder-front-glass,
+        .folder-3d-card.folder-open .folder-front-glass {
+            transform: rotateX(-14deg);
+            border-top-color: #38BDF8;
+        }
+
+        .lanyard-badge {
+            transform-origin: top center;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+        }
+
+        .lanyard-badge:hover {
+            transform: rotate(0deg) translateY(-6px) scale(1.03) !important;
+            box-shadow: 0 30px 65px rgba(37, 99, 235, 0.22);
+        }
+
+        /* Stadium Lighting & Pitch */
+        .floodlight-beam-left {
+            position: absolute;
+            top: -10%;
+            left: -6%;
+            width: 54vw;
+            height: 92vh;
+            background: conic-gradient(from 116deg at 8% 0%, rgba(255, 255, 255, 0.22), rgba(56, 189, 248, 0.12) 25deg, transparent 58deg);
+            filter: blur(46px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floodlight-beam-right {
+            position: absolute;
+            top: -10%;
+            right: -6%;
+            width: 54vw;
+            height: 92vh;
+            background: conic-gradient(from 194deg at 92% 0%, transparent 0deg, rgba(56, 189, 248, 0.12) 32deg, rgba(255, 255, 255, 0.22) 55deg, transparent 74deg);
+            filter: blur(46px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .stadium-boundary-ring {
+            position: absolute;
+            bottom: -145px;
+            left: 50%;
+            transform: translateX(-50%) perspective(700px) rotateX(74deg);
+            width: 1180px;
+            height: 500px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(56, 189, 248, 0.28);
+            box-shadow: 0 0 40px rgba(37, 99, 235, 0.35), inset 0 0 40px rgba(16, 185, 129, 0.08);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .cricket-pitch-3d {
+            position: absolute;
+            bottom: -24px;
+            left: 50%;
+            transform: translateX(-50%) perspective(580px) rotateX(72deg);
+            width: 340px;
+            height: 290px;
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.05) 0%, rgba(37, 99, 235, 0.22) 60%, rgba(5, 7, 11, 0.95) 100%);
+            border-left: 2px solid rgba(255, 255, 255, 0.45);
+            border-right: 2px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 -15px 80px rgba(37, 99, 235, 0.45);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .popping-crease {
+            position: absolute;
+            bottom: 70px;
+            left: -14%;
+            width: 128%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.82), transparent);
+        }
+
+        /* Enhanced Studio Shadows for Floating Dashboard Cards */
+        .clean-glass {
+            background: rgba(10, 14, 22, 0.88);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow:
+                0 35px 75px -10px rgba(0, 0, 0, 0.95),
+                0 20px 40px -15px rgba(0, 0, 0, 0.98),
+                0 0 32px rgba(37, 99, 235, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .clean-glass:hover {
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow:
+                0 40px 85px -10px rgba(0, 0, 0, 0.98),
+                0 0 40px rgba(37, 99, 235, 0.22),
+                inset 0 1px 0 rgba(255, 255, 255, 0.28);
+        }
+
+        /* Deep Shadow Backdrop Behind "CODE IN MOTION. ARCHITECTURES THAT LAST." */
+        .manifesto-shadow-backdrop {
+            position: relative;
+            z-index: 20;
+            text-shadow:
+                0 14px 32px rgba(0, 0, 0, 0.98),
+                0 6px 14px rgba(0, 0, 0, 0.95),
+                0 0 40px rgba(0, 0, 0, 0.9);
+        }
+
+        .manifesto-shadow-backdrop::before {
+            content: "";
+            position: absolute;
+            inset: -24px -32px;
+            background: radial-gradient(ellipse at center, rgba(5, 7, 11, 0.92) 0%, rgba(5, 7, 11, 0.65) 55%, transparent 80%);
+            filter: blur(16px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Central Avatar Left, Right & Back Studio Shadow Separation so "HI, I'M SHUBHAM" Pops Cleanly */
+        .avatar-studio-shadow {
+            filter:
+                drop-shadow(-26px 8px 34px rgba(0, 0, 0, 0.95)) drop-shadow(26px 8px 34px rgba(0, 0, 0, 0.95)) drop-shadow(0 -18px 36px rgba(0, 0, 0, 0.92)) drop-shadow(0 30px 48px rgba(0, 0, 0, 0.98));
+        }
+
+        .avatar-contact-shadow {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 82%;
+            height: 36px;
+            background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.72) 48%, transparent 80%);
+            filter: blur(8px);
+            z-index: 25;
+            pointer-events: none;
+        }
+
+        /* Realistic Floating & Rotating White Leather Cricket Ball Animation */
+        @keyframes floatCricketBall {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-6px) rotate(180deg);
+            }
+        }
+
+        @keyframes rotateCricketBallSlow {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .white-cricket-ball-float {
+            animation: floatCricketBall 7s ease-in-out infinite;
+            filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.85)) drop-shadow(0 4px 10px rgba(56, 189, 248, 0.15));
+        }
+
+        .white-cricket-ball-spin {
+            animation: rotateCricketBallSlow 18s linear infinite;
+        }
+
+        /* Smooth Kinetic Role Switcher Animation */
+        .role-switch {
+            display: inline-block;
+            transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), filter 0.28s ease;
+        }
+
+        .role-out {
+            opacity: 0;
+            transform: translateY(14px) scale(0.96);
+            filter: blur(4px);
+        }
+
+        .role-in {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
+        }
+
+        .monitor-3d-wrapper {
+            perspective: 1500px;
+        }
+
+        .monitor-frame {
+            transform: rotateY(12deg) rotateX(3deg);
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: -25px 30px 80px rgba(0, 0, 0, 0.9), 0 0 55px rgba(37, 99, 235, 0.25);
+        }
+
+        .monitor-frame:hover {
+            transform: rotateY(4deg) rotateX(1deg) scale(1.01);
+        }
+
+        .iso-stage {
+            perspective: 1700px;
+            transform-style: preserve-3d;
+        }
+
+        .iso-card {
+            position: absolute;
+            width: 340px;
+            height: 220px;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 28px 65px rgba(0, 0, 0, 0.88);
+        }
+
+        .cat-pill-active {
+            background: linear-gradient(135deg, #2563EB, #38BDF8) !important;
+            color: #05070B !important;
+            font-weight: 700 !important;
+            border-color: transparent !important;
+            box-shadow: 0 0 22px rgba(56, 189, 248, 0.45);
+        }
+
+        @media (max-width: 768px) {
+            .monitor-frame {
+                transform: none !important;
+            }
+
+            .iso-card {
+                width: 290px;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-obsidian text-white selection:bg-electricBlue selection:text-white">
+    <div class="cinematic-noise"></div>
+
+    <!-- HEADER -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-obsidian/85 backdrop-blur-xl border-b border-white/15">
+        <div class="max-w-[1440px] mx-auto grid grid-cols-12 items-center h-16 px-4 sm:px-8 divide-x divide-white/15">
+            <div class="col-span-6 sm:col-span-3 lg:col-span-2 pr-4 flex items-center gap-2.5 h-full">
+                <span class="w-2.5 h-2.5 rounded-full bg-electricBlue shadow-[0_0_12px_#38BDF8]"></span>
+                <a href="#home" class="font-anton text-lg tracking-wider text-white">SHUBHAM</a>
+            </div>
+            <div
+                class="hidden lg:flex lg:col-span-3 px-5 items-center h-full font-tech text-[10px] leading-tight uppercase tracking-[0.18em] text-coolGrey">
+                <div>
+                    <p class="text-white font-bold">AI RESEARCH // FULL STACK</p>
+                    <p>3D WEB & CRICKET TELEMETRY</p>
+                </div>
+            </div>
+            <nav
+                class="hidden md:flex md:col-span-6 lg:col-span-5 h-full items-center divide-x divide-white/15 font-tech text-[11px] font-semibold uppercase tracking-[0.18em] text-silverMist">
+                <a href="#about"
+                    class="px-4 h-full flex items-center hover:text-iceCyan hover:bg-white/5 transition">01. Dossier</a>
+                <a href="#arena"
+                    class="px-4 h-full flex items-center hover:text-iceCyan hover:bg-white/5 transition">02. 3D
+                    Arena</a>
+                <a href="#projects"
+                    class="px-4 h-full flex items-center hover:text-iceCyan hover:bg-white/5 transition">03. Works</a>
+                <a href="#experience"
+                    class="px-4 h-full flex items-center hover:text-iceCyan hover:bg-white/5 transition">04.
+                    Archives</a>
+                <a href="#certificates"
+                    class="px-4 h-full flex items-center hover:text-iceCyan hover:bg-white/5 transition">05. Badges</a>
+            </nav>
+            <div class="col-span-6 sm:col-span-3 lg:col-span-2 pl-4 flex items-center justify-end h-full">
+                <a href="#contact"
+                    class="px-4 py-2 rounded-full bg-white text-obsidian hover:bg-iceCyan font-tech font-bold text-[10px] tracking-[0.2em] uppercase transition flex items-center gap-2"><span>Contact</span><span
+                        class="w-2 h-2 rounded-full bg-electricBlue"></span></a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="home"
+        class="relative min-h-screen w-full overflow-hidden flex flex-col justify-between pt-20 pb-6 px-4 sm:px-8 bg-gradient-to-b from-obsidian via-[#070B14] to-charcoal border-b border-white/15">
+        <div id="beam-left" class="floodlight-beam-left"></div>
+        <div id="beam-right" class="floodlight-beam-right"></div>
+
+        <!-- Top Stadium Floodlight Telemetry Strip -->
+        <div
+            class="max-w-[1440px] mx-auto w-full flex flex-wrap items-center justify-between gap-3 relative z-30 pt-2 border-b border-white/10 pb-3">
+            <a href="#arena" class="clean-glass px-3.5 py-1.5 rounded-full flex items-center gap-3 group">
+                <div class="grid grid-cols-3 gap-0.5 p-1 rounded bg-white/10 border border-iceCyan/50"><span
+                        class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span><span
+                        class="w-1.5 h-1.5 rounded-full bg-iceCyan"></span><span
+                        class="w-1.5 h-1.5 rounded-full bg-white"></span></div>
+                <span class="font-tech text-[10px] uppercase tracking-[0.18em] text-silverMist"><strong
+                        class="text-iceCyan">TOWER 01:</strong> Python • LangChain • Scikit-Learn • FastAPI</span>
+            </a>
+            <div class="flex items-center gap-4 font-tech text-[10px] uppercase tracking-[0.22em] text-coolGrey">
+                <span>STADIUM EDITION // 2026</span>
+                <span class="text-electricBlue">●</span>
+                <span>JERSEY NO. 45</span>
+                <span class="text-electricBlue">●</span>
+                <span class="text-turfAccent">PITCH STATUS: LIVE 120 FPS</span>
+            </div>
+        </div>
+
+        <div class="relative max-w-[1440px] mx-auto w-full flex-1 flex flex-col justify-center my-auto py-4">
+            <!-- Monumental Background Typography with Crisp Contrast -->
+            <div class="relative w-full text-center z-10 pointer-events-none select-none">
+                <h1
+                    class="editorial-giant text-[13.5vw] lg:text-[12vw] text-white tracking-tight leading-[0.82] drop-shadow-[0_28px_55px_rgba(0,0,0,0.98)] whitespace-nowrap">
+                    HI, I'M SHUBHAM
+                </h1>
+            </div>
+
+            <div class="relative z-30 grid grid-cols-1 lg:grid-cols-12 items-center gap-6 -mt-6 sm:-mt-14 lg:-mt-24">
+                <!-- LEFT COLUMN -->
+                <div class="lg:col-span-4 flex flex-col items-start space-y-5 order-2 lg:order-1">
+                    <!-- Manifesto Text with Deep Back Shadow so it Pops Clearly Against "HI," -->
+                    <div class="space-y-2 manifesto-shadow-backdrop">
+                        <p class="font-anton text-2xl sm:text-3xl tracking-wide uppercase text-white leading-none">
+                            CODE IN MOTION.<br />ARCHITECTURES THAT LAST.
+                        </p>
+                        <div class="w-12 h-[2.5px] bg-electricBlue shadow-[0_0_12px_#38BDF8]"></div>
+                    </div>
+
+                    <!-- Left Player Roster Card -->
+                    <div class="clean-glass p-5 rounded-2xl w-full max-w-sm tilt-card">
+                        <div class="flex items-center justify-between">
+                            <div class="pr-5 space-y-2">
+                                <div class="flex items-center gap-2.5">
+                                    <svg class="w-7 h-5 rounded-sm border border-white/25" viewBox="0 0 36 24">
+                                        <rect width="36" height="8" fill="#FF9933" />
+                                        <rect y="8" width="36" height="8" fill="#FFFFFF" />
+                                        <rect y="16" width="36" height="8" fill="#138808" />
+                                        <circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="1.2" />
+                                    </svg>
+                                    <div
+                                        class="w-6 h-6 rounded-full bg-electricBlue/30 border border-iceCyan/60 flex items-center justify-center">
+                                        <svg class="w-3.5 h-3.5 text-iceCyan" fill="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 2L14.8 8.5L22 9.3L16.5 14L18.2 21L12 17.3L5.8 21L7.5 14L2 9.3L9.2 8.5L12 2Z" />
+                                        </svg></div>
+                                    <span class="font-tech text-[11px] font-bold tracking-[0.24em] text-iceCyan">IND //
+                                        ICT</span>
+                                </div>
+                                <div>
+                                    <p class="font-tech text-[10px] uppercase tracking-[0.22em] text-coolGrey">PLAYER
+                                        ROSTER</p>
+                                    <p class="font-anton text-2xl tracking-wide text-white">SHUBHAM GAWAS</p>
+                                </div>
+                            </div>
+                            <div
+                                class="h-16 w-[2px] bg-gradient-to-b from-transparent via-iceCyan to-transparent shadow-[0_0_12px_#38BDF8]">
+                            </div>
+                            <div class="pl-5 text-right">
+                                <span
+                                    class="font-tech text-[10px] uppercase tracking-[0.2em] text-coolGrey block">JERSEY</span>
+                                <span
+                                    class="font-anton text-6xl leading-none bg-gradient-to-b from-white via-silverMist to-electricBlue bg-clip-text text-transparent">45</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Realistic White Leather Stitched Cricket Ball Card -->
+                    <div class="clean-glass px-4 py-3 rounded-2xl w-full max-w-sm flex items-center gap-4">
+                        <div
+                            class="relative w-16 h-16 flex-shrink-0 flex items-center justify-center white-cricket-ball-float">
+                            <div class="absolute -bottom-1.5 w-11 h-2.5 rounded-full bg-black/80 blur-sm"></div>
+                            <img src="cricket-ball.png" alt="White Leather Cricket Ball"
+                                class="w-14 h-14 object-contain white-cricket-ball-spin hidden"
+                                onload="this.classList.remove('hidden'); this.nextElementSibling.classList.add('hidden');"
+                                onerror="this.classList.add('hidden');" />
+                            <svg class="w-14 h-14 white-cricket-ball-spin" viewBox="0 0 120 120" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <radialGradient id="whiteLeatherSphere" cx="34%" cy="30%" r="68%" fx="28%" fy="24%">
+                                        <stop offset="0%" stop-color="#FFFFFF" />
+                                        <stop offset="32%" stop-color="#F7F5F0" />
+                                        <stop offset="68%" stop-color="#DDD6C7" />
+                                        <stop offset="88%" stop-color="#B8AE9B" />
+                                        <stop offset="100%" stop-color="#8C8270" />
+                                    </radialGradient>
+                                    <radialGradient id="leatherSpecular" cx="30%" cy="26%" r="32%">
+                                        <stop offset="0%" stop-color="rgba(255,255,255,0.9)" />
+                                        <stop offset="60%" stop-color="rgba(255,255,255,0.2)" />
+                                        <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+                                    </radialGradient>
+                                    <clipPath id="ballCircleClip">
+                                        <circle cx="60" cy="60" r="54" />
+                                    </clipPath>
+                                </defs>
+                                <circle cx="60" cy="60" r="54" fill="url(#whiteLeatherSphere)" />
+                                <g clip-path="url(#ballCircleClip)">
+                                    <path d="M 38 4 C 76 34, 82 86, 48 116" stroke="#6E6555" stroke-width="2.2"
+                                        fill="none" opacity="0.75" />
+                                    <path d="M 31 6 C 69 36, 75 88, 41 118" stroke="#EAE3D5" stroke-width="5.5"
+                                        stroke-dasharray="4 3.2" stroke-linecap="round" fill="none" />
+                                    <path d="M 31 6 C 69 36, 75 88, 41 118" stroke="#7A705E" stroke-width="6.5"
+                                        stroke-dasharray="1.2 6" fill="none" opacity="0.65" />
+                                    <path d="M 45 2 C 83 32, 89 84, 55 114" stroke="#EAE3D5" stroke-width="5.5"
+                                        stroke-dasharray="4 3.2" stroke-linecap="round" fill="none" />
+                                    <path d="M 45 2 C 83 32, 89 84, 55 114" stroke="#7A705E" stroke-width="6.5"
+                                        stroke-dasharray="1.2 6" fill="none" opacity="0.65" />
+                                </g>
+                                <circle cx="60" cy="60" r="54" fill="url(#leatherSpecular)" />
+                                <circle cx="60" cy="60" r="53.5" stroke="rgba(255,255,255,0.45)" stroke-width="0.8" />
+                            </svg>
+                        </div>
+                        <p class="font-tech text-[11px] uppercase tracking-[0.16em] text-silverMist/90 leading-relaxed">
+                            A CREATIVE AI & FULL-STACK LAB FOR HIGH-VELOCITY DIGITAL PRODUCTS.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- CENTER COLUMN: Avatar with Left, Right, and Back Shadow Separation so "HI, I'M SHUBHAM" is Clearly Visible -->
+                <div class="lg:col-span-4 relative flex justify-center items-end order-1 lg:order-2">
+                    <!-- Deep Left, Right & Back Shadow Halo Behind Avatar -->
+                    <div
+                        class="absolute top-6 bottom-8 w-72 sm:w-80 rounded-full bg-black/90 blur-[38px] pointer-events-none z-10">
+                    </div>
+                    <div
+                        class="absolute -left-4 top-1/4 w-44 h-64 rounded-full bg-black/80 blur-[36px] pointer-events-none z-10">
+                    </div>
+                    <div
+                        class="absolute -right-4 top-1/4 w-44 h-64 rounded-full bg-black/80 blur-[36px] pointer-events-none z-10">
+                    </div>
+                    <div
+                        class="absolute bottom-8 w-64 h-64 rounded-full bg-electricBlue/22 blur-[90px] pointer-events-none z-10">
+                    </div>
+
+                    <img id="hero-avatar" src="avatar.png" alt="Shubham #45 Portrait"
+                        class="relative z-30 max-h-[48vh] lg:max-h-[62vh] w-auto object-contain avatar-studio-shadow transition-transform duration-200 ease-out" />
+                    <div class="avatar-contact-shadow"></div>
+
+                    <div
+                        class="masking-tape absolute -right-2 sm:right-2 top-8 z-40 px-3.5 py-2 rounded rotate-6 shadow-2xl pointer-events-none">
+                        <p class="font-hand text-xl font-bold leading-none text-inkBlack">Cricket & AI<br />Live Here!
+                            #45</p>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Floating Dashboard Panels with 5-Role Smooth Switcher -->
+                <div class="lg:col-span-4 flex flex-col lg:items-end justify-center space-y-4 order-3">
+                    <div
+                        class="clean-glass px-4 py-3 rounded-2xl w-full max-w-sm flex items-center justify-between gap-4">
+                        <div class="w-16 h-16 relative flex-shrink-0"><canvas id="hero-cricket-ball-canvas"
+                                class="w-16 h-16 cursor-pointer"></canvas></div>
+                        <div class="text-left lg:text-right">
+                            <span
+                                class="font-tech text-[10px] uppercase tracking-[0.2em] text-iceCyan font-bold block">3D
+                                LEATHER & SEAM ENGINE</span>
+                            <p class="text-xs text-silverMist mt-0.5">Interactive WebGL Cricket Sphere — Hover or Drag
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="clean-glass p-6 rounded-2xl w-full max-w-sm text-left lg:text-right tilt-card">
+                        <div
+                            class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-electricBlue/25 border border-iceCyan/40 mb-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-iceCyan animate-ping"></span>
+                            <span class="font-tech text-[10px] font-bold uppercase tracking-[0.2em] text-iceCyan">LIVE
+                                ROLE ENGINE</span>
+                        </div>
+                        <p class="font-tech text-xs uppercase tracking-[0.24em] text-coolGrey">I AM A</p>
+                        <div class="h-14 flex items-center lg:justify-end overflow-hidden">
+                            <span id="role-text"
+                                class="role-switch role-in font-anton text-3xl sm:text-4xl tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white via-silverMist to-iceCyan">
+                                AI RESEARCHER
+                            </span>
+                        </div>
+                        <div
+                            class="mt-3 pt-3 border-t border-white/10 flex items-center justify-between font-tech text-[11px] text-coolGrey">
+                            <span>STRIKE RATE: <strong class="text-white">99.8% UI</strong></span>
+                            <span class="text-iceCyan font-bold">IND // #45</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Hero Social Links -->
+        <div
+            class="relative z-40 max-w-[1440px] mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-white/15">
+            <div class="flex items-center gap-3">
+                <a href="https://github.com/shubhamgawas4506-coder" target="_blank" rel="noopener noreferrer"
+                    class="clean-glass px-4 py-2 rounded-full font-tech text-[11px] font-semibold tracking-wider uppercase text-white hover:text-turfAccent hover:-translate-y-0.5 transition flex items-center gap-2">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path
+                            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://www.linkedin.com/in/shubham-gawas-9381572b2/" target="_blank" rel="noopener noreferrer"
+                    class="clean-glass px-4 py-2 rounded-full font-tech text-[11px] font-semibold tracking-wider uppercase text-white hover:text-iceCyan hover:-translate-y-0.5 transition flex items-center gap-2">
+                    <svg class="w-4 h-4 fill-current text-[#0A66C2]" viewBox="0 0 24 24">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                    <span>LinkedIn</span>
+                </a>
+                <a href="https://x.com/ohsshub" target="_blank" rel="noopener noreferrer"
+                    class="clean-glass px-4 py-2 rounded-full font-tech text-[11px] font-semibold tracking-wider uppercase text-white hover:text-iceCyan hover:-translate-y-0.5 transition flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 24 24">
+                        <path
+                            d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                    </svg>
+                    <span>X</span>
+                </a>
+            </div>
+            <a href="#about"
+                class="font-tech text-[11px] uppercase tracking-[0.24em] text-iceCyan hover:text-white transition">[ 01
+                // ENTER MATCH DOSSIER & 3D SKILL ARENA ↓ ]</a>
+        </div>
+
+        <div class="stadium-boundary-ring"></div>
+        <div class="cricket-pitch-3d">
+            <div class="popping-crease"></div>
+        </div>
+    </section>
+
+    <!-- EDITORIAL STATEMENT BANNER -->
+    <section class="bg-editorialPaper text-inkBlack border-b border-black/15">
+        <div class="max-w-[1440px] mx-auto divide-y divide-black/15">
+            <div
+                class="grid grid-cols-1 lg:grid-cols-12 items-center divide-y lg:divide-y-0 lg:divide-x divide-black/15">
+                <div class="lg:col-span-6 p-6 sm:p-10">
+                    <h2 class="editorial-giant text-6xl sm:text-8xl lg:text-[6.8rem] tracking-tight text-inkBlack">CODE
+                        THAT</h2>
+                </div>
+                <div class="lg:col-span-6 p-6 sm:p-10 flex items-center justify-between"><span
+                        class="font-hand text-5xl sm:text-7xl lg:text-8xl font-bold text-electricBlue -rotate-2">Strikes
+                        Clean</span><span
+                        class="font-tech text-[11px] uppercase tracking-[0.22em] text-slate-500 hidden sm:block text-right">INNINGS
+                        01 // 2026<br />HIGH-IMPACT AI</span></div>
+            </div>
+            <div
+                class="grid grid-cols-1 lg:grid-cols-12 items-center divide-y lg:divide-y-0 lg:divide-x divide-black/15">
+                <div class="lg:col-span-5 p-6 sm:p-10">
+                    <h2 class="editorial-giant text-6xl sm:text-8xl lg:text-[6.8rem] tracking-tight text-inkBlack">
+                        BEFORE</h2>
+                </div>
+                <div class="lg:col-span-5 p-6 sm:p-10">
+                    <div class="cad-selection-box"><span class="cad-handle tl"></span><span
+                            class="cad-handle tr"></span><span class="cad-handle bl"></span><span
+                            class="cad-handle br"></span><span
+                            class="font-hand text-5xl sm:text-7xl font-bold text-inkBlack px-2">The Ball Lands.</span>
+                    </div>
+                </div>
+                <div
+                    class="lg:col-span-2 p-6 sm:p-8 font-tech text-xs uppercase tracking-[0.2em] font-bold text-inkBlack space-y-1">
+                    <p>RESEARCH</p>
+                    <p>ARCHITECT</p>
+                    <p>ANIMATE</p>
+                    <p class="text-electricBlue">DEPLOY ↗</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DOSSIER & ABOUT -->
+    <section id="about" class="scrapbook-surface py-24 px-4 sm:px-8 border-b border-black/15 relative overflow-hidden">
+        <div class="max-w-[1440px] mx-auto">
+            <div class="flex flex-wrap items-center justify-between pb-6 mb-12 border-b border-black/15">
+                <div class="flex items-center gap-4"><span
+                        class="w-10 h-10 rounded-full border border-black/30 flex items-center justify-center font-tech text-xs font-bold">01</span><span
+                        class="font-tech text-xs font-bold uppercase tracking-[0.25em] text-slate-600">PLAYER SCOUTING
+                        DOSSIER // SCRAPBOOK EDITION</span></div>
+                <span class="font-hand text-2xl text-electricBlue font-bold">★ Official Match-Day Technical File</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div class="lg:col-span-4 space-y-6">
+                    <div
+                        class="relative bg-white p-5 rounded-xl border border-black/15 shadow-xl -rotate-1 hover:rotate-0 transition duration-300 tilt-card">
+                        <svg class="w-8 h-16 absolute -top-6 left-6 text-slate-500 z-20" viewBox="0 0 24 48" fill="none"
+                            stroke="currentColor" stroke-width="2.2">
+                            <path
+                                d="M8 12V34C8 38.4 11.6 42 16 42C20.4 42 24 38.4 24 34V10C24 4.5 19.5 0 14 0C8.5 0 4 4.5 4 10V32"
+                                stroke-linecap="round" />
+                        </svg>
+                        <div class="grid grid-cols-12 gap-4 items-center pt-2">
+                            <div class="col-span-5 bg-obsidian rounded-lg overflow-hidden border border-black/10 pt-2">
+                                <img src="avatar.png" alt="Shubham Scouting Photo" class="w-full h-36 object-contain" />
+                            </div>
+                            <div class="col-span-7 space-y-1.5">
+                                <h3 class="font-anton text-3xl tracking-wide text-inkBlack leading-none">SHUBHAM GAWAS
+                                </h3>
+                                <p class="font-tech text-xs font-bold text-electricBlue uppercase">AI Researcher & ML
+                                    Engineer</p>
+                                <p class="text-[11px] text-slate-600 font-medium">Machine Learning & Data Science</p>
+                                <div
+                                    class="pt-2 border-t border-black/10 font-tech text-[10px] uppercase tracking-wider text-slate-500 space-y-0.5">
+                                    <p>CTRY: <strong class="text-inkBlack">INDIA (ICT)</strong></p>
+                                    <p>JERSEY: <strong class="text-inkBlack">#45</strong></p>
+                                    <p>BAT/BOWL: <strong class="text-electricBlue">AI & DATA SCIENCE</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-obsidian text-white p-6 rounded-[28px] border-4 border-slate-300 shadow-2xl relative">
+                        <div
+                            class="flex items-center justify-between font-tech text-xs text-iceCyan pb-3 mb-3 border-b border-white/10">
+                            <span class="font-bold lowercase">about shubham.45</span><span
+                                class="flex items-center gap-1.5"><span
+                                    class="w-2 h-2 rounded-full bg-turfAccent"></span> 45:00 LIVE</span></div>
+                        <p class="text-xs sm:text-sm text-silverMist leading-relaxed">
+                            I am an <strong class="text-white">AI Research Intern at UpToSkills</strong> and <strong
+                                class="text-iceCyan">Data Science Intern at Genuis AI and Software Solutions</strong>.
+                            Like an all-rounder reading the pitch under stadium floodlights, I engineer autonomous
+                            multi-agent AI research systems (<strong class="text-white">Python, LangChain</strong>),
+                            end-to-end data engineering pipelines (<strong class="text-white">PySpark, FastAPI, Airflow,
+                                AWS S3</strong>), and robust predictive ML architectures.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- THE EXPERIENCE SHEET: Both Internships Active ("NOV 2026 — PRESENT" & "SEP 2026 — PRESENT") -->
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="receipt-card p-7 rounded-xl rotate-1 hover:rotate-0 transition duration-300 relative">
+                        <div class="masking-tape w-28 h-6 absolute -top-3 left-1/2 -translate-x-1/2 -rotate-2"></div>
+                        <div class="text-center border-b-2 border-dashed border-slate-300 pb-4 mb-5">
+                            <p class="font-tech text-[10px] uppercase tracking-[0.25em] text-slate-400">OFFICIAL MATCH
+                                SCORECARD</p>
+                            <h3 class="font-anton text-4xl tracking-wide text-inkBlack mt-1">THE EXPERIENCE SHEET</h3>
+                        </div>
+                        <div
+                            class="flex justify-between font-tech text-[10px] uppercase tracking-widest text-slate-400 mb-4">
+                            <span>INNINGS / ROLE</span><span>SEASON</span></div>
+
+                        <div class="space-y-6 font-tech text-xs">
+                            <!-- Experience 01: UpToSkills (Nov 2026 – Present) -->
+                            <div
+                                class="relative p-4 pt-5 rounded-xl border-2 border-electricBlue bg-electricBlue/5 shadow-sm">
+                                <span
+                                    class="font-hand text-base text-electricBlue font-bold absolute -top-3.5 left-3.5 bg-white px-2.5 py-0.5 rounded shadow-sm border border-electricBlue/25">
+                                    ★ Current Innings
+                                </span>
+                                <div
+                                    class="flex flex-wrap items-center justify-between gap-2 font-bold text-inkBlack text-sm">
+                                    <span>AI Research Intern</span>
+                                    <span class="text-electricBlue font-bold font-tech text-xs">NOV 2026 —
+                                        PRESENT</span>
+                                </div>
+                                <p class="text-xs text-slate-700 font-semibold mt-1">UpToSkills</p>
+                                <div
+                                    class="flex items-center gap-2 mt-2.5 pt-2 border-t border-electricBlue/20 text-[10px] uppercase tracking-wider text-slate-600">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-turfAccent animate-ping"></span>
+                                    <span class="font-bold text-turfAccent">CURRENT / ACTIVE INNINGS</span>
+                                </div>
+                            </div>
+
+                            <!-- Experience 02: Genuis AI and Software Solutions (Sep 2026 – Present) -->
+                            <div
+                                class="relative p-4 pt-5 rounded-xl border-2 border-electricBlue bg-electricBlue/5 shadow-sm">
+                                <span
+                                    class="font-hand text-base text-electricBlue font-bold absolute -top-3.5 left-3.5 bg-white px-2.5 py-0.5 rounded shadow-sm border border-electricBlue/25">
+                                    ★ Current Innings
+                                </span>
+                                <div
+                                    class="flex flex-wrap items-center justify-between gap-2 font-bold text-inkBlack text-sm">
+                                    <span>Data Science Intern</span>
+                                    <span class="text-electricBlue font-bold font-tech text-xs">SEP 2026 —
+                                        PRESENT</span>
+                                </div>
+                                <p class="text-xs text-slate-700 font-semibold mt-1">Genuis AI and Software Solutions
+                                </p>
+                                <div
+                                    class="flex items-center gap-2 mt-2.5 pt-2 border-t border-electricBlue/20 text-[10px] uppercase tracking-wider text-slate-600">
+                                    <span class="inline-block w-2 h-2 rounded-full bg-turfAccent animate-ping"></span>
+                                    <span class="font-bold text-turfAccent">CURRENT / ACTIVE INNINGS</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="mt-6 pt-4 border-t-2 border-dashed border-slate-300 flex items-center justify-between">
+                            <div>
+                                <p class="font-tech text-[10px] font-bold uppercase text-inkBlack">VERIFIED PLAYER #45
+                                </p>
+                                <p class="font-tech text-[9px] text-slate-400">STRIKE RATE: 99.8% PRODUCTION</p>
+                            </div>
+                            <svg class="h-8 w-28 text-inkBlack" fill="currentColor" viewBox="0 0 120 30">
+                                <rect x="2" width="3" height="30" />
+                                <rect x="8" width="1.5" height="30" />
+                                <rect x="13" width="4" height="30" />
+                                <rect x="20" width="2" height="30" />
+                                <rect x="25" width="1.5" height="30" />
+                                <rect x="30" width="5" height="30" />
+                                <rect x="38" width="2" height="30" />
+                                <rect x="43" width="3" height="30" />
+                                <rect x="49" width="1.5" height="30" />
+                                <rect x="54" width="4" height="30" />
+                                <rect x="61" width="2" height="30" />
+                                <rect x="66" width="1.5" height="30" />
+                                <rect x="71" width="5" height="30" />
+                                <rect x="79" width="2" height="30" />
+                                <rect x="84" width="3" height="30" />
+                                <rect x="90" width="1.5" height="30" />
+                                <rect x="95" width="4" height="30" />
+                                <rect x="103" width="2" height="30" />
+                                <rect x="108" width="4" height="30" />
+                                <rect x="115" width="2" height="30" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="bg-obsidian text-white p-6 rounded-2xl border border-black/20 shadow-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <div><span
+                                    class="font-tech text-[10px] uppercase tracking-[0.2em] text-iceCyan font-bold block">TACTICAL
+                                    FIELD RADAR</span>
+                                <h4 class="font-anton text-xl tracking-wide text-white">360° WAGON WHEEL</h4>
+                            </div>
+                            <span id="radar-zone-label"
+                                class="font-tech text-[10px] px-2.5 py-1 rounded bg-electricBlue/30 text-iceCyan border border-iceCyan/40">CLICK
+                                ANY FIELD NODE</span>
+                        </div>
+                        <div class="relative flex justify-center my-2">
+                            <svg id="wagon-wheel-svg" class="w-56 h-56 cursor-pointer" viewBox="0 0 200 200">
+                                <circle cx="100" cy="100" r="92" fill="#07111A" stroke="#2563EB" stroke-width="2" />
+                                <circle cx="100" cy="100" r="84" fill="none" stroke="rgba(255,255,255,0.22)"
+                                    stroke-width="1" />
+                                <circle cx="100" cy="100" r="52" fill="none" stroke="#38BDF8" stroke-width="1.2"
+                                    stroke-dasharray="4 4" />
+                                <line x1="100" y1="100" x2="45" y2="38" stroke="rgba(56,189,248,0.45)"
+                                    stroke-width="1.5" />
+                                <line x1="100" y1="100" x2="162" y2="45" stroke="rgba(37,99,235,0.6)"
+                                    stroke-width="1.5" />
+                                <line x1="100" y1="100" x2="168" y2="132" stroke="rgba(16,185,129,0.55)"
+                                    stroke-width="1.5" />
+                                <line x1="100" y1="100" x2="36" y2="142" stroke="rgba(56,189,248,0.55)"
+                                    stroke-width="1.5" />
+                                <rect x="92" y="72" width="16" height="56" rx="2" fill="#1E293B"
+                                    stroke="rgba(255,255,255,0.5)" stroke-width="1" />
+                                <circle class="radar-node" data-zone="LONG-OFF // MULTI-AGENT AI & LANGCHAIN" cx="45"
+                                    cy="38" r="6" fill="#38BDF8" />
+                                <circle class="radar-node" data-zone="COVER DRIVE // MACHINE LEARNING & PREDICTION"
+                                    cx="162" cy="45" r="6" fill="#2563EB" />
+                                <circle class="radar-node" data-zone="MID-WICKET // DATA ENGINEERING & PYSPARK" cx="168"
+                                    cy="132" r="6" fill="#10B981" />
+                                <circle class="radar-node" data-zone="FINE LEG // FASTAPI, DUCKDB & AWS S3" cx="36"
+                                    cy="142" r="6" fill="#FFFFFF" />
+                                <circle cx="100" cy="100" r="4" fill="#38BDF8" />
+                            </svg>
+                        </div>
+                        <p class="font-tech text-[11px] text-center text-coolGrey">Click the glowing boundary nodes to
+                            inspect field coverage across AI, 3D Web, and Cloud.</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-xl border border-black/15 shadow-md space-y-2.5">
+                        <span
+                            class="font-tech text-[10px] font-bold uppercase tracking-[0.22em] text-electricBlue block">CORE
+                            ATTRIBUTES // PITCH TEMPERAMENT</span>
+                        <div class="flex flex-wrap gap-2">
+                            <span
+                                class="px-3 py-1 bg-editorialPaper border border-black/15 font-tech text-xs font-bold text-inkBlack -rotate-1">First-Principles
+                                Research</span>
+                            <span
+                                class="px-3 py-1 bg-editorialPaper border border-black/15 font-tech text-xs font-bold text-inkBlack rotate-1">120
+                                FPS Motion Craft</span>
+                            <span
+                                class="px-3 py-1 bg-obsidian text-white font-tech text-xs font-bold -rotate-1">Autonomous
+                                Agent Design</span>
+                            <span
+                                class="px-3 py-1 bg-editorialPaper border border-black/15 font-tech text-xs font-bold text-inkBlack rotate-1">High-Pressure
+                                Delivery</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SKILL STADIUM ARENA -->
+    <section id="arena" class="relative py-28 px-4 sm:px-8 bg-obsidian border-b border-white/15 overflow-hidden">
+        <div
+            class="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[450px] rounded-full bg-electricBlue/15 blur-[160px] pointer-events-none">
+        </div>
+        <div class="relative z-10 max-w-[1440px] mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-10 gsap-section-header">
+                <div class="lg:col-span-7">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electricBlue/15 border border-iceCyan/30 mb-3">
+                        <span class="w-1.5 h-1.5 rounded-full bg-turfAccent animate-ping"></span><span
+                            class="font-tech text-[11px] font-bold uppercase tracking-[0.22em] text-iceCyan">02 //
+                            INTERACTIVE CRICKET GROUND & 3D SKILL SPHERES</span></div>
+                    <h2 class="editorial-giant text-6xl sm:text-8xl tracking-tight text-white">THE SKILL <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-white via-iceCyan to-electricBlue">STADIUM.</span>
+                    </h2>
+                </div>
+                <div class="lg:col-span-5 text-coolGrey text-sm leading-relaxed space-y-2">
+                    <p>A full-scale cricket stadium with <strong class="text-white">mowed emerald outfield turf, 30-yard
+                            fielding circle, boundary rope, and central clay pitch with stumps</strong>.</p>
+                    <p class="font-tech text-xs uppercase tracking-[0.15em] text-iceCyan">↓ Drag & throw the full-bleed
+                        brand spheres across the outfield, or <strong>click any sphere</strong> to inspect its
+                        telemetry!</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <div id="skill-category-filters" class="flex flex-wrap items-center gap-2">
+                    <button data-cat="ALL"
+                        class="cat-pill cat-pill-active px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal border border-white/15 text-silverMist transition">All
+                        Official Logos</button>
+                    <button data-cat="Languages"
+                        class="cat-pill px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal hover:border-iceCyan/50 border border-white/10 text-coolGrey hover:text-white transition">Languages</button>
+                    <button data-cat="Frontend & 3D"
+                        class="cat-pill px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal hover:border-iceCyan/50 border border-white/10 text-coolGrey hover:text-white transition">Frontend
+                        & 3D</button>
+                    <button data-cat="Backend & APIs"
+                        class="cat-pill px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal hover:border-iceCyan/50 border border-white/10 text-coolGrey hover:text-white transition">Backend
+                        & APIs</button>
+                    <button data-cat="AI & ML"
+                        class="cat-pill px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal hover:border-iceCyan/50 border border-white/10 text-coolGrey hover:text-white transition">AI
+                        & ML</button>
+                    <button data-cat="GenAI & LLMs"
+                        class="cat-pill px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal hover:border-iceCyan/50 border border-white/10 text-coolGrey hover:text-white transition">GenAI
+                        & LLMs</button>
+                    <button data-cat="Databases"
+                        class="cat-pill px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal hover:border-iceCyan/50 border border-white/10 text-coolGrey hover:text-white transition">Databases</button>
+                    <button data-cat="Cloud & Tools"
+                        class="cat-pill px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal hover:border-iceCyan/50 border border-white/10 text-coolGrey hover:text-white transition">Cloud
+                        & Tools</button>
+                    <button data-cat="Data Engineering"
+                        class="cat-pill px-3.5 py-1.5 rounded-full font-tech text-[11px] uppercase tracking-wider bg-charcoal hover:border-iceCyan/50 border border-white/10 text-coolGrey hover:text-white transition">Data
+                        Engineering</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="impulse-wave"
+                        class="px-3.5 py-1.5 rounded-full bg-electricBlue/20 hover:bg-electricBlue border border-iceCyan/40 font-tech text-[11px] font-bold uppercase tracking-wider text-white transition">⚡
+                        Shockwave</button>
+                    <button id="toggle-gravity"
+                        class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/15 border border-white/15 font-tech text-[11px] font-bold uppercase tracking-wider text-silverMist transition">Zero-G:
+                        OFF</button>
+                    <button id="respawn-balls"
+                        class="px-3.5 py-1.5 rounded-full bg-iceCyan text-obsidian font-tech text-[11px] font-bold uppercase tracking-wider shadow-[0_0_20px_rgba(56,189,248,0.4)] hover:scale-105 transition">+
+                        Drop Sphere</button>
+                </div>
+            </div>
+
+            <!-- Enlarged Stadium Bowl Container -->
+            <div
+                class="relative w-full h-[640px] sm:h-[740px] lg:h-[780px] rounded-[36px] bg-[#07110B] border-2 border-white/15 overflow-hidden shadow-[0_40px_110px_rgba(0,0,0,0.95),0_0_70px_rgba(16,185,129,0.14)]">
+                <div class="absolute top-4 left-6 right-6 z-20 flex items-center justify-between pointer-events-none">
+                    <div
+                        class="px-3.5 py-1.5 rounded-full bg-obsidian/75 backdrop-blur-md border border-white/15 flex items-center gap-2.5">
+                        <span
+                            class="w-2 h-2 rounded-full bg-turfAccent animate-pulse shadow-[0_0_10px_#10B981]"></span><span
+                            class="font-tech font-bold text-[11px] tracking-[0.18em] uppercase text-white">SHUBHAM.45 //
+                            LIVE CRICKET STADIUM OUTFIELD & PITCH ARENA</span></div>
+                    <span id="arena-active-count"
+                        class="px-3.5 py-1.5 rounded-full bg-obsidian/75 backdrop-blur-md border border-iceCyan/30 font-tech text-[11px] text-iceCyan font-bold uppercase tracking-widest">OFFICIAL
+                        LOGOS ON FIELD</span>
+                </div>
+                <canvas id="skills-physics-canvas"
+                    class="w-full h-full cursor-grab active:cursor-grabbing relative z-10"></canvas>
+
+                <div id="skill-inspector"
+                    class="absolute top-4 right-4 bottom-4 w-full max-w-sm clean-glass rounded-2xl p-6 z-30 translate-x-[120%] opacity-0 transition-all duration-500 flex flex-col justify-between border border-iceCyan/50 shadow-[0_0_60px_rgba(5,7,11,0.9)]">
+                    <div>
+                        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                            <span id="insp-category"
+                                class="font-tech text-[10px] font-bold uppercase tracking-[0.22em] px-2.5 py-1 rounded bg-electricBlue/30 text-iceCyan border border-iceCyan/30">AI
+                                & MACHINE LEARNING</span>
+                            <button id="close-inspector"
+                                class="w-7 h-7 rounded-full bg-white/10 hover:bg-iceCyan hover:text-obsidian text-xs font-bold transition flex items-center justify-center">✕</button>
+                        </div>
+                        <div class="flex items-center gap-4 my-5">
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-white border border-white/40 flex items-center justify-center p-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
+                                <img id="insp-logo" src="" alt="Tech Logo" class="w-12 h-12 object-contain" /></div>
+                            <div>
+                                <p class="font-tech text-[10px] uppercase tracking-[0.2em] text-coolGrey">VERIFIED
+                                    TECHNOLOGY</p>
+                                <h3 id="insp-name" class="font-anton text-3xl tracking-wide text-white">Python</h3>
+                                <p id="insp-role" class="font-tech text-xs text-iceCyan font-semibold mt-0.5">Core AI &
+                                    Data Science Stack</p>
+                            </div>
+                        </div>
+                        <p id="insp-desc" class="text-xs sm:text-sm text-silverMist/90 leading-relaxed">Core language
+                            for Multi-Agent AI research, data engineering, and machine learning pipelines.</p>
+                        <div class="mt-6">
+                            <p class="font-tech text-[10px] uppercase tracking-[0.22em] text-coolGrey mb-2.5">DEPLOYED
+                                IN PORTFOLIO PROJECTS</p>
+                            <div id="insp-projects" class="flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                    <div
+                        class="pt-4 border-t border-white/10 flex items-center justify-between font-tech text-[11px] text-coolGrey">
+                        <span>SPHERE DIAMETER: <strong id="insp-radius" class="text-white">84px</strong></span><a
+                            href="#projects" class="text-iceCyan hover:underline font-bold">VIEW WORKSTATION ↓</a></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJECTS & WORKSTATION -->
+    <section id="projects"
+        class="relative py-28 px-4 sm:px-8 bg-obsidian text-white border-b border-white/15 overflow-hidden">
+        <div class="max-w-[1440px] mx-auto relative z-10">
+            <div
+                class="flex flex-col md:flex-row md:items-end justify-between pb-8 mb-14 border-b border-white/15 gap-6 gsap-section-header">
+                <div>
+                    <div class="flex items-center gap-3 mb-2"><span
+                            class="w-8 h-8 rounded-full border border-iceCyan/50 flex items-center justify-center font-tech text-xs font-bold text-iceCyan">03</span><span
+                            class="font-tech text-xs font-bold uppercase tracking-[0.25em] text-iceCyan">SELECTED CASE
+                            STUDIES & 3D ARCHIVE FOLDERS</span></div>
+                    <h2 class="editorial-giant text-6xl sm:text-8xl tracking-tight">SELECTED <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-white via-iceCyan to-electricBlue">WORKS</span>
+                    </h2>
+                </div>
+                <div class="flex items-center gap-3 font-tech text-xs uppercase tracking-[0.2em] text-coolGrey"><span
+                        class="w-2 h-2 rounded-full bg-turfAccent animate-pulse"></span><span>6 VERIFIED PRODUCTION
+                        REPOSITORIES</span></div>
+            </div>
+
+            <!-- PART A: 3D FOLDERS FOR ALL 6 PROJECTS -->
+            <div class="mb-20">
+                <div class="flex items-center justify-between mb-6">
+                    <p class="font-tech text-xs uppercase tracking-[0.22em] text-silverMist"><span
+                            class="text-iceCyan font-bold">INTERACTIVE 3D PROJECT DIRECTORIES:</span> HOVER OR CLICK ANY
+                        FROSTED FOLDER TO EXTRACT TELEMETRY & SYNC 3D MONITOR</p>
+                    <span class="font-hand text-2xl text-iceCyan hidden md:block">Click a folder to open case study
+                        ↗</span>
+                </div>
+                <div id="folders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"></div>
+            </div>
+
+            <!-- PART B: WORKSTATION MONITOR -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pt-6 border-t border-white/10">
+                <div class="lg:col-span-6 monitor-3d-wrapper">
+                    <div class="monitor-frame bg-charcoal p-3.5 rounded-2xl border border-white/20">
+                        <div id="monitor-screen"
+                            class="relative h-[330px] sm:h-[370px] rounded-xl p-7 flex flex-col justify-between overflow-hidden bg-gradient-to-br from-electricBlue via-[#0A1936] to-obsidian transition-all duration-500">
+                            <div
+                                class="flex items-center justify-between font-tech text-[11px] uppercase tracking-[0.2em] text-silverMist/80">
+                                <span id="monitor-tag">{ GENAI // MULTI-AGENT ARCHITECTURE }</span><span
+                                    id="monitor-year" class="text-iceCyan font-bold">NOV 2026</span></div>
+                            <div class="my-auto space-y-3 max-w-md">
+                                <p id="monitor-desc"
+                                    class="text-sm sm:text-base text-white/95 font-medium leading-relaxed">An AI-powered
+                                    multi-agent research system built using LangChain, where specialized AI agents
+                                    collaborate to research topics, gather information, analyze findings and generate
+                                    structured research reports.</p>
+                                <div id="monitor-stack" class="flex flex-wrap gap-2 pt-2 font-tech"></div>
+                            </div>
+                            <div
+                                class="pt-4 border-t border-white/20 flex flex-wrap items-center justify-between gap-3">
+                                <h3 id="monitor-title"
+                                    class="font-anton text-2xl sm:text-4xl tracking-wide uppercase text-white">
+                                    MULTI-AGENT AI RESEARCH SYSTEM</h3>
+                                <div class="flex items-center gap-3">
+                                    <a id="monitor-github"
+                                        href="https://github.com/shubhamgawas4506-coder/Multi-Agent-AI-Research-System-Using-Langchain"
+                                        target="_blank" rel="noopener noreferrer"
+                                        class="clean-glass px-3.5 py-1.5 rounded-full font-tech text-xs uppercase tracking-wider font-bold text-white hover:text-iceCyan hover:border-iceCyan transition flex items-center gap-2 border border-white/20 shadow-lg"><svg
+                                            class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                                        </svg><span>GitHub Repo ↗</span></a>
+                                    <button onclick="openCaseStudyModal()"
+                                        class="font-tech text-xs uppercase tracking-[0.2em] font-bold text-iceCyan hover:underline">OPEN
+                                        FULL CASE FILE ↗</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="mx-auto w-28 h-12 bg-gradient-to-b from-slate-300/35 to-slate-800/85 border-x border-white/20">
+                    </div>
+                    <div
+                        class="mx-auto w-56 h-3 rounded-full bg-silverMist/25 shadow-[0_10px_35px_rgba(37,99,235,0.5)]">
+                    </div>
+
+                    <div class="flex items-center justify-center gap-4 mt-6">
+                        <button id="prev-proj" aria-label="Previous Project Innings"
+                            class="clean-glass px-5 py-2.5 rounded-full font-tech text-xs uppercase tracking-widest font-bold text-white hover:text-iceCyan hover:border-iceCyan transition-all duration-300 flex items-center gap-2 border border-white/20 shadow-lg active:scale-95 group cursor-pointer"><span
+                                class="group-hover:-translate-x-1 transition-transform">←</span> PREV INNINGS</button>
+                        <button id="next-proj" aria-label="Next Project Innings"
+                            class="clean-glass px-5 py-2.5 rounded-full font-tech text-xs uppercase tracking-widest font-bold text-white hover:text-iceCyan hover:border-iceCyan transition-all duration-300 flex items-center gap-2 border border-white/20 shadow-lg active:scale-95 group cursor-pointer">NEXT
+                            INNINGS <span class="group-hover:translate-x-1 transition-transform">→</span></button>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-6 relative h-[430px] flex items-center justify-center iso-stage" id="iso-deck">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXPERIENCE & INNINGS SECTION -->
+    <section id="experience" class="relative py-24 px-4 sm:px-8 bg-charcoal border-b border-white/15">
+        <div class="max-w-[1440px] mx-auto">
+            <div
+                class="flex flex-wrap items-end justify-between pb-6 mb-14 border-b border-white/15 gap-4 gsap-section-header">
+                <div><span class="font-tech text-xs font-bold uppercase tracking-[0.25em] text-iceCyan">04 // CAREER
+                        ARCHIVES & PROFESSIONAL INNINGS</span>
+                    <h2 class="editorial-giant text-5xl sm:text-7xl tracking-tight mt-1 text-white">EXPERIENCE & <span
+                            class="text-iceCyan">INNINGS</span></h2>
+                </div>
+                <span class="font-tech text-xs uppercase tracking-[0.2em] text-coolGrey">VERIFIED RECORDS // 2026</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                <div
+                    class="clean-glass p-8 rounded-3xl border-t-4 border-t-electricBlue relative group tilt-card shadow-2xl">
+                    <div class="flex items-center justify-between"><span
+                            class="font-tech text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-electricBlue/30 text-iceCyan border border-iceCyan/30">FILE
+                            01 // CURRENT INNINGS</span><span
+                            class="flex items-center gap-1.5 font-tech text-xs font-bold text-turfAccent"><span
+                                class="w-2 h-2 rounded-full bg-turfAccent animate-ping"></span> CURRENT / ACTIVE</span>
+                    </div>
+                    <h3 class="font-anton text-4xl sm:text-5xl tracking-wide text-white mt-5">AI RESEARCH INTERN</h3>
+                    <p class="font-tech text-base text-iceCyan uppercase tracking-widest mt-1 font-bold">UpToSkills</p>
+                    <div class="mt-3 font-tech text-xs text-coolGrey flex items-center gap-3"><span
+                            class="text-white font-semibold">📅 November 2026 – Present</span></div>
+                </div>
+
+                <div
+                    class="clean-glass p-8 rounded-3xl border-t-4 border-t-electricBlue relative group tilt-card shadow-2xl">
+                    <div class="flex items-center justify-between"><span
+                            class="font-tech text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-electricBlue/30 text-iceCyan border border-iceCyan/30">FILE
+                            02 // CURRENT INNINGS</span><span
+                            class="flex items-center gap-1.5 font-tech text-xs font-bold text-turfAccent"><span
+                                class="w-2 h-2 rounded-full bg-turfAccent animate-ping"></span> CURRENT / ACTIVE</span>
+                    </div>
+                    <h3 class="font-anton text-4xl sm:text-5xl tracking-wide text-white mt-5">DATA SCIENCE INTERN</h3>
+                    <p class="font-tech text-base text-iceCyan uppercase tracking-widest mt-1 font-bold">Genuis AI and
+                        Software Solutions</p>
+                    <div class="mt-3 font-tech text-xs text-coolGrey flex items-center gap-3"><span
+                            class="text-white font-semibold">📅 September 2026 – Present</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CERTIFICATES & CREDENTIALS -->
+    <section id="certificates"
+        class="relative py-28 bg-editorialPaper text-inkBlack border-b border-black/15 overflow-hidden">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8">
+            <div class="flex flex-wrap items-end justify-between pb-6 mb-12 border-b border-black/15 gap-4">
+                <div><span class="font-tech text-xs font-bold uppercase tracking-[0.25em] text-electricBlue">05 //
+                        VERIFIED CREDENTIAL ARCHIVES</span>
+                    <h2 class="editorial-giant text-6xl sm:text-8xl tracking-tight text-inkBlack mt-1">MEET THE <span
+                            class="text-electricBlue">CREDENTIALS.</span></h2>
+                </div>
+                <div class="font-tech text-xs uppercase tracking-[0.2em] text-slate-600 text-right">
+                    <p class="font-bold text-inkBlack">9 VERIFIED SPECIALIZATIONS</p>
+                    <p class="text-electricBlue">RANKED BY RELEVANCE</p>
+                </div>
+            </div>
+
+            <!-- PRIORITY 1: TOP 4 CERTIFICATIONS -->
+            <div class="mb-14">
+                <div class="flex items-center gap-3 mb-6"><span class="w-3 h-3 rounded-full bg-electricBlue"></span>
+                    <h3 class="font-tech text-xs font-bold uppercase tracking-[0.22em] text-inkBlack">PRIORITY 01 // TOP
+                        AI & DATA SCIENCE CREDENTIALS</h3>
+                </div>
+                <div class="relative pt-6 pb-4">
+                    <svg class="w-full h-12 absolute top-0 left-0 pointer-events-none hidden md:block"
+                        viewBox="0 0 1200 60" fill="none">
+                        <path d="M 0 10 Q 600 50 1200 10" stroke="rgba(10,13,18,0.35)" stroke-width="2" />
+                    </svg>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7 relative z-10"
+                        id="priority1-certs"></div>
+                </div>
+            </div>
+
+            <!-- PRIORITY 2: ADDITIONAL TECHNICAL CERTIFICATIONS -->
+            <div class="mb-14">
+                <div class="flex items-center gap-3 mb-6"><span class="w-3 h-3 rounded-full bg-turfAccent"></span>
+                    <h3 class="font-tech text-xs font-bold uppercase tracking-[0.22em] text-inkBlack">PRIORITY 02 //
+                        TECHNICAL SPECIALIZATIONS & PROMPT ENGINEERING</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="priority2-certs"></div>
+            </div>
+
+            <!-- PRIORITY 3: SQL CERTIFICATIONS -->
+            <div class="mb-14">
+                <div class="flex items-center gap-3 mb-6"><span class="w-3 h-3 rounded-full bg-emerald-600"></span>
+                    <h3 class="font-tech text-xs font-bold uppercase tracking-[0.22em] text-inkBlack">PRIORITY 03 //
+                        VERIFIED SQL SKILL CERTIFICATIONS</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="priority3-certs"></div>
+            </div>
+
+            <!-- PRIORITY 4: BOOTCAMP -->
+            <div class="mb-14" id="priority4-cert"></div>
+
+            <!-- THREE.JS CLUSTER -->
+            <div
+                class="relative w-full h-[380px] rounded-3xl bg-obsidian border border-black/20 overflow-hidden shadow-2xl">
+                <div class="absolute top-6 left-8 z-20 pointer-events-none"><span
+                        class="font-tech text-xs font-bold uppercase tracking-[0.25em] text-iceCyan">INTERACTIVE WEBGL
+                        TROPHY CLUSTER</span>
+                    <h3 class="font-anton text-3xl tracking-wide mt-1 text-white">3D PBR CREDENTIAL SPHERES</h3>
+                    <p class="font-tech text-xs text-coolGrey mt-0.5">Move cursor to interact with the real-time
+                        Three.js cluster</p>
+                </div>
+                <canvas id="three-cert-canvas" class="w-full h-full block"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT & FOOTER (Direct Email Delivery to shubhamgawas4506@gmail.com) -->
+    <footer id="contact" class="relative pt-24 pb-12 px-4 sm:px-8 bg-obsidian text-white">
+        <div class="max-w-[1440px] mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pb-16 border-b border-white/15">
+                <div class="lg:col-span-7 space-y-4">
+                    <div class="flex items-center gap-3"><span
+                            class="w-8 h-8 rounded-full border border-iceCyan/50 flex items-center justify-center font-tech text-xs font-bold text-iceCyan">06</span><span
+                            class="font-tech text-xs font-bold uppercase tracking-[0.25em] text-iceCyan">START AN
+                            INNINGS TOGETHER</span></div>
+                    <h2 class="editorial-giant text-6xl sm:text-8xl lg:text-[7.2rem] tracking-tight leading-[0.86]">
+                        LET'S<br />CREATE<br />SOMETHING <span
+                            class="font-hand text-7xl sm:text-9xl text-iceCyan capitalize font-bold ml-2">Next.</span>
+                    </h2>
+                </div>
+                <div class="lg:col-span-5">
+                    <div class="clean-glass rounded-3xl p-8 border border-white/15">
+                        <p class="text-sm text-silverMist mb-6 leading-relaxed">New AI research collaborations,
+                            full-stack product builds, or startup engineering roles — I'm ready to take guard at the
+                            crease.</p>
+
+                        <form id="portfolio-contact-form" onsubmit="sendEmailToShubham(event)" class="space-y-3.5">
+                            <input id="contact-name" name="name" type="text" placeholder="Your Name / Organization"
+                                required
+                                class="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white placeholder:text-coolGrey/60 focus:outline-none focus:border-iceCyan transition" />
+                            <input id="contact-email" name="email" type="email" placeholder="Your Email Address"
+                                required
+                                class="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white placeholder:text-coolGrey/60 focus:outline-none focus:border-iceCyan transition" />
+                            <textarea id="contact-message" name="message" rows="3"
+                                placeholder="Tell me about your project or role..." required
+                                class="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/15 text-sm text-white placeholder:text-coolGrey/60 focus:outline-none focus:border-iceCyan transition"></textarea>
+                            <button id="contact-submit-btn" type="submit"
+                                class="w-full py-4 rounded-xl bg-gradient-to-r from-electricBlue to-iceCyan text-obsidian font-tech font-bold text-xs tracking-[0.22em] uppercase shadow-[0_0_30px_rgba(56,189,248,0.45)] hover:opacity-95 transition cursor-pointer">
+                                GET IN TOUCH →
+                            </button>
+                            <p id="contact-status" class="font-tech text-xs text-center hidden pt-1"></p>
+                        </form>
+
+                        <script>
+                            async function sendEmailToShubham(e) {
+                                e.preventDefault();
+                                const btn = document.getElementById("contact-submit-btn");
+                                const status = document.getElementById("contact-status");
+                                const name = document.getElementById("contact-name").value;
+                                const email = document.getElementById("contact-email").value;
+                                const message = document.getElementById("contact-message").value;
+
+                                btn.textContent = "SENDING TRANSMISSION...";
+                                btn.disabled = true;
+
+                                try {
+                                    const res = await fetch("https://formsubmit.co/ajax/shubhamgawas4506@gmail.com", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "Accept": "application/json"
+                                        },
+                                        body: JSON.stringify({
+                                            name: name,
+                                            email: email,
+                                            message: message,
+                                            _subject: `Portfolio Inquiry from ${name} (#45)`
+                                        })
+                                    });
+
+                                    if (res.ok) {
+                                        btn.textContent = "TRANSMISSION SENT ✓";
+                                        status.textContent = "Message delivered to shubhamgawas4506@gmail.com!";
+                                        status.className = "font-tech text-xs text-center text-turfAccent pt-1 block";
+                                        document.getElementById("portfolio-contact-form").reset();
+                                    } else {
+                                        throw new Error("FormSubmit activation pending");
+                                    }
+                                } catch (err) {
+                                    window.location.href = `mailto:shubhamgawas4506@gmail.com?subject=${encodeURIComponent("Portfolio Inquiry from " + name)}&body=${encodeURIComponent("From: " + name + " (" + email + ")\n\n" + message)}`;
+                                    btn.textContent = "GET IN TOUCH →";
+                                } finally {
+                                    setTimeout(() => {
+                                        btn.textContent = "GET IN TOUCH →";
+                                        btn.disabled = false;
+                                    }, 4000);
+                                }
+                            }
+                        </script>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-tech text-xs text-coolGrey">
+                <div class="flex items-center gap-3">
+                    <span class="font-anton text-lg text-white tracking-wider">SHUBHAM.45</span>
+                    <span>—</span>
+                    <span>ALL RIGHTS RESERVED 2026</span>
+                </div>
+                <div class="flex items-center gap-6 uppercase tracking-widest font-semibold text-white/85">
+                    <a href="https://github.com/shubhamgawas4506-coder" target="_blank" rel="noopener noreferrer"
+                        class="hover:text-turfAccent transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path
+                                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                        </svg>
+                        <span>GitHub</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/shubham-gawas-9381572b2/" target="_blank"
+                        rel="noopener noreferrer" class="hover:text-iceCyan transition flex items-center gap-1.5">
+                        <svg class="w-4 h-4 fill-current text-[#0A66C2]" viewBox="0 0 24 24">
+                            <path
+                                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                        </svg>
+                        <span>LinkedIn</span>
+                    </a>
+                    <a href="https://x.com/ohsshub" target="_blank" rel="noopener noreferrer"
+                        class="hover:text-iceCyan transition flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 fill-current text-white" viewBox="0 0 24 24">
+                            <path
+                                d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                        </svg>
+                        <span>X</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CASE STUDY MODAL -->
+    <div id="case-study-modal"
+        class="fixed inset-0 z-50 bg-obsidian/85 backdrop-blur-xl hidden items-center justify-center p-4">
+        <div
+            class="clean-glass max-w-2xl w-full rounded-3xl p-8 border border-iceCyan/50 shadow-[0_0_80px_rgba(37,99,235,0.5)] relative">
+            <button onclick="closeCaseStudyModal()"
+                class="absolute top-6 right-6 w-9 h-9 rounded-full bg-white/10 hover:bg-iceCyan hover:text-obsidian font-bold transition flex items-center justify-center">✕</button>
+            <span id="modal-tag" class="font-tech text-xs font-bold uppercase tracking-[0.22em] text-iceCyan">{ GENAI //
+                MULTI-AGENT ARCHITECTURE }</span>
+            <h3 id="modal-title" class="font-anton text-4xl sm:text-5xl tracking-wide text-white mt-2">MULTI-AGENT AI
+                RESEARCH SYSTEM</h3>
+            <p id="modal-date" class="font-tech text-xs text-coolGrey mt-1">📅 November 2026</p>
+            <p id="modal-desc" class="text-sm sm:text-base text-silverMist mt-4 leading-relaxed"></p>
+            <div class="mt-6 pt-6 border-t border-white/15 flex flex-wrap items-center justify-between gap-4">
+                <div id="modal-stack" class="flex flex-wrap gap-2 font-tech"></div>
+                <div class="flex items-center gap-3">
+                    <a id="modal-github" href="https://github.com/shubhamgawas4506-coder" target="_blank"
+                        rel="noopener noreferrer"
+                        class="px-5 py-2.5 rounded-full bg-electricBlue hover:bg-iceCyan hover:text-obsidian text-white font-tech text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path
+                                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                        </svg><span>View on GitHub ↗</span>
+                    </a>
+                    <button onclick="closeCaseStudyModal()"
+                        class="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-tech text-xs font-bold uppercase tracking-wider transition">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULAR SCRIPTS -->
+    <script src="projects.js"></script>
+    <script src="arena-skills.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
